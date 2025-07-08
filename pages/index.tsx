@@ -12,8 +12,8 @@ const features = [
 ];
 
 const FeatureCard = ({ icon, title, description }: { icon: string; title: string; description: string }) => (
-  <div className="feature-card text-center p-8 rounded-xl transition-all duration-300 ease-in-out transform hover:-translate-y-1">
-    <h3 className="text-2xl font-bold mb-4">{icon} {title}</h3>
+  <div className="feature-card">
+    <h3>{icon} {title}</h3>
     <p>{description}</p>
   </div>
 );
@@ -22,21 +22,31 @@ const LandingPage = () => {
   const router = useRouter();
 
   return (
-    <div className="theme-wrapper">
+    <>
       <style jsx>{`
-        .theme-wrapper {
-          background: radial-gradient(circle at 50% 0%, var(--background-start), var(--background-end));
-          color: var(--text-primary);
+        .page-container {
+          font-family: var(--font-geist-sans);
         }
         header {
+          text-align: center;
+          padding: 4rem 1rem;
           background: linear-gradient(90deg, var(--header-start), var(--header-end));
           color: var(--header-text);
-          padding: 4rem 1rem;
-          text-align: center;
+        }
+        h1 {
+          font-size: 3rem;
+          font-weight: 700;
+          margin-bottom: 1rem;
+          font-family: var(--font-geist-mono);
+        }
+        header p {
+          font-size: 1.2rem;
+          max-width: 700px;
+          margin: 0 auto 2rem;
         }
         .cta-button {
           display: inline-block;
-          background-color: var(--cta-bg);
+          background: var(--cta-bg);
           color: var(--cta-text);
           padding: 0.75rem 2rem;
           font-weight: 600;
@@ -46,55 +56,73 @@ const LandingPage = () => {
           font-size: 1.1rem;
         }
         .cta-button:hover {
-          background-color: var(--cta-hover-bg);
+          background: var(--cta-hover-bg);
           transform: translateY(-3px);
+        }
+        .features {
+          max-width: 1200px;
+          margin: 4rem auto;
+          padding: 2rem;
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+          gap: 2rem;
         }
         .feature-card {
           background: var(--card-bg);
-          border: 1px solid var(--card-border, transparent);
+          border-radius: 12px;
+          padding: 2rem;
+          text-align: center;
           backdrop-filter: blur(8px);
+          transition: transform 0.3s ease, background 0.3s ease;
+          border: var(--card-border, 1px solid transparent);
+          box-shadow: var(--card-shadow);
         }
         .feature-card:hover {
+          transform: translateY(-5px);
           background: var(--card-hover-bg);
         }
         .feature-card h3 {
+          font-family: var(--font-geist-mono);
+          font-size: 1.3rem;
           color: var(--card-title);
+          margin-bottom: 1rem;
+          font-weight: 700;
         }
         .feature-card p {
+          font-size: 1rem;
           color: var(--text-secondary);
         }
         footer {
+          text-align: center;
+          padding: 2rem 1rem;
+          font-size: 0.9rem;
           color: var(--text-secondary);
         }
       `}</style>
+      <div className="page-container">
+        <header>
+          <h1>🚀 Product Overview</h1>
+          <p>Master the art of peak performance. Discover your brain’s unique flow profile and transform how you set goals, build habits, and thrive.</p>
+          <a
+            href="#"
+            onClick={(e) => {
+              e.preventDefault();
+              router.push('/onboarding/brain-profile-quiz');
+            }}
+            className="cta-button">
+            ✨ Start Your Journey
+          </a>
+        </header>
 
-      <header>
-        <h1 className="text-5xl font-bold mb-4">🚀 Product Overview</h1>
-        <p className="text-lg max-w-2xl mx-auto mb-8">
-          Master the art of peak performance. Discover your brain’s unique flow profile and transform how you set goals, build habits, and thrive.
-        </p>
-        <a 
-          href="#" 
-          className="cta-button"
-          onClick={(e) => {
-            e.preventDefault();
-            router.push('/onboarding/brain-profile-quiz');
-          }}
-        >
-          ✨ Start Your Journey
-        </a>
-      </header>
+        <section className="features">
+          {features.map(feature => <FeatureCard key={feature.title} {...feature} />)}
+        </section>
 
-      <section className="max-w-6xl mx-auto my-16 p-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {features.map(feature => (
-          <FeatureCard key={feature.title} {...feature} />
-        ))}
-      </section>
-
-      <footer className="text-center py-8 text-sm">
-        &copy; 2025 FlowScience. All rights reserved.
-      </footer>
-    </div>
+        <footer>
+          &copy; 2025 FlowScience. All rights reserved.
+        </footer>
+      </div>
+    </>
   );
 };
 

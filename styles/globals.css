@@ -1,19 +1,11 @@
-/*
-  Dual-Mode Global Styles
-  - Font import for 'Inter'.
-  - CSS variables for light and dark themes.
-  - Base styles for the application.
-*/
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  /* Light Mode Palette */
-  --background-start: #fdfcfb;
-  --background-end: #e2d1c3;
+  /* --- Light Mode Palette --- */
+  --bg-start: #fdfcfb;
+  --bg-end: #e2d1c3;
   --text-primary: #333333;
   --text-secondary: #666666;
   --header-start: #4facfe;
@@ -25,12 +17,13 @@
   --cta-bg: #ffffff;
   --cta-text: #007cf0;
   --cta-hover-bg: #e0f7ff;
+  --card-shadow: 0 8px 24px rgba(0,0,0,0.1);
 }
 
 .dark {
-  /* Dark Mode Palette */
-  --background-start: #1f2937;
-  --background-end: #111827;
+  /* --- Dark Mode Palette --- */
+  --bg-start: #1f2937;
+  --bg-end: #111827;
   --text-primary: #f3f4f6;
   --text-secondary: #9ca3af;
   --header-start: #0ea5e9;
@@ -39,13 +32,16 @@
   --card-bg: rgba(255, 255, 255, 0.05);
   --card-hover-bg: rgba(255, 255, 255, 0.1);
   --card-title: #3b82f6;
-  --card-border: rgba(255, 255, 255, 0.1);
+  --card-border: 1px solid rgba(255, 255, 255, 0.1);
   --cta-bg: #f3f4f6;
   --cta-text: #0ea5e9;
   --cta-hover-bg: #e0f2fe;
+  --card-shadow: none;
 }
 
 body {
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-geist-sans), sans-serif;
+  background: radial-gradient(circle at 50% 0%, var(--bg-start), var(--bg-end));
+  color: var(--text-primary);
   line-height: 1.6;
 }
