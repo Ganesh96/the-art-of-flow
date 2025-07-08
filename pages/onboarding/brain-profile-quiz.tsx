@@ -1,13 +1,9 @@
 // pages/onboarding/brain-profile-quiz.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/router';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '../../lib/supabaseClient';
 import QuizQuestion from '../../components/onboarding/QuizQuestion';
-import { User } from '@supabase/supabase-js';
 
 // Define quiz questions and their properties
-// This array will be expanded to cover all fields in your brain_profiles schema
 const quizQuestions = [
   {
     id: 'chronotype',
@@ -93,70 +89,11 @@ const quizQuestions = [
 
 const BrainProfileQuizPage: React.FC = () => {
   const router = useRouter();
-  const queryClient = useQueryClient();
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, any>>({});
   const [error, setError] = useState<string | null>(null);
 
-  // Get current user on mount
-  useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (user) {
-        setCurrentUser(user);
-      } else {
-        // Redirect to login if not authenticated
-        router.push('/auth/login'); // Ensure you have a login page
-      }
-    });
-  }, [router]);
-
   const currentQuestion = quizQuestions[currentQuestionIndex];
-
-  // TanStack Query mutation for saving brain profile
-  const saveBrainProfileMutation = useMutation({
-    mutationFn: async (profileData: any) => {
-      if (!currentUser) throw new Error('User not authenticated.');
-
-      // Check if a profile already exists for the user
-      const { data: existingProfile, error: fetchError } = await supabase
-        .from('brain_profiles')
-        .select('id')
-        .eq('user_id', currentUser.id)
-        .single();
-
-      if (fetchError && fetchError.code !== 'PGRST116') { // PGRST116 means "no rows found"
-        throw fetchError;
-      }
-
-      if (existingProfile) {
-        // Update existing profile
-        const { data, error } = await supabase
-          .from('brain_profiles')
-          .update(profileData)
-          .eq('user_id', currentUser.id)
-          .select();
-        if (error) throw error;
-        return data;
-      } else {
-        // Insert new profile
-        const { data, error } = await supabase
-          .from('brain_profiles')
-          .insert({ ...profileData, user_id: currentUser.id })
-          .select();
-        if (error) throw error;
-        return data;
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['brainProfile'] }); // Invalidate cache
-      router.push('/dashboard'); // Redirect to dashboard after successful onboarding
-    },
-    onError: (err: any) => {
-      console.error('Failed to save brain profile:', err);
-      setError(err.message || 'An unexpected error occurred.');
-    },
-  });
 
   const handleAnswerChange = (value: any) => {
     setAnswers((prev) => ({
@@ -166,21 +103,21 @@ const BrainProfileQuizPage: React.FC = () => {
   };
 
   const handleNext = () => {
-    // Basic validation: ensure an answer is selected/provided
+    // Basic validation
     if (currentQuestion.type === 'multi-select' && (!answers[currentQuestion.id] || answers[currentQuestion.id].length === 0)) {
       setError('Please select at least one option.');
       return;
     }
     if (currentQuestion.type === 'single-choice' && !answers[currentQuestion.id]) {
-        setError('Please select an option.');
-        return;
+      setError('Please select an option.');
+      return;
     }
     if (currentQuestion.type === 'slider' && (answers[currentQuestion.id] === undefined || answers[currentQuestion.id] === null)) {
-        setError('Please select a value on the slider.');
-        return;
+      setError('Please select a value on the slider.');
+      return;
     }
 
-    setError(null); // Clear error if validation passes
+    setError(null);
 
     if (currentQuestionIndex < quizQuestions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
@@ -192,17 +129,11 @@ const BrainProfileQuizPage: React.FC = () => {
   const handleBack = () => {
     if (currentQuestionIndex > 0) {
       setCurrentQuestionIndex(currentQuestionIndex - 1);
-      setError(null); // Clear error when going back
+      setError(null);
     }
   };
 
-  const handleSubmit = async () => {
-    if (!currentUser) {
-      setError('User not authenticated. Please log in.');
-      return;
-    }
-    setError(null);
-
+  const handleSubmit = () => {
     const profileData = {
       chronotype: answers.chronotype || null,
       flow_triggers: answers.flow_triggers || [],
@@ -213,30 +144,22 @@ const BrainProfileQuizPage: React.FC = () => {
       dopamine_resensitization_needs: answers.dopamine_resensitization_needs || [],
     };
 
-    saveBrainProfileMutation.mutate(profileData);
+    const encodedAnswers = encodeURIComponent(JSON.stringify(profileData));
+    router.push(`/auth/complete-profile?answers=${encodedAnswers}`);
   };
 
-  // Display loading state while user is being fetched or profile is saving
-  if (!currentUser && !saveBrainProfileMutation.isPending) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
-        <p className="text-lg text-slate-700 dark:text-slate-300">Loading user session...</p>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-4 dark:bg-gray-900">
+    <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-gray-900">
       <div className="w-full max-w-2xl">
         <div className="mb-8 text-center">
-          <h2 className="text-3xl font-bold text-[#005F73] dark:text-[#94D2BD]">Your Brain Profile Quiz</h2>
-          <p className="text-slate-600 mt-2 dark:text-slate-300">Help us understand your unique flow architecture.</p>
+          <h2 className="text-3xl font-bold text-primary">Your Brain Profile Quiz</h2>
+          <p className="text-gray-300 mt-2">Help us understand your unique flow architecture.</p>
         </div>
 
         {/* Progress Bar */}
-        <div className="w-full bg-gray-200 rounded-full h-2.5 mb-8 dark:bg-gray-700">
+        <div className="w-full bg-gray-700 rounded-full h-2.5 mb-8">
           <div
-            className="bg-[#0A9396] h-2.5 rounded-full transition-all duration-300 ease-in-out"
+            className="bg-primary h-2.5 rounded-full transition-all duration-300 ease-in-out"
             style={{ width: `${((currentQuestionIndex + 1) / quizQuestions.length) * 100}%` }}
           ></div>
         </div>
@@ -245,41 +168,30 @@ const BrainProfileQuizPage: React.FC = () => {
           question={currentQuestion.question}
           options={currentQuestion.options}
           type={currentQuestion.type as any}
-          value={answers[currentQuestion.id] || (currentQuestion.type === 'multi-select' ? [] : (currentQuestion.type === 'slider' ? 0 : ''))}
+          value={answers[currentQuestion.id] || (currentQuestion.type === 'multi-select' ? [] : (currentQuestion.type === 'slider' ? 50 : ''))}
           onChange={handleAnswerChange}
           tooltipContent={currentQuestion.tooltipContent}
         />
 
         {error && (
-          <p className="text-red-500 text-center mt-4">{error}</p>
+          <p className="text-red-400 text-center mt-4">{error}</p>
         )}
 
         <div className="flex justify-between mt-8 max-w-xl mx-auto">
           <button
             onClick={handleBack}
-            disabled={currentQuestionIndex === 0 || saveBrainProfileMutation.isPending}
-            className={`px-6 py-3 rounded-lg font-semibold transition-all duration-200 ease-in-out
-              ${currentQuestionIndex === 0 || saveBrainProfileMutation.isPending
-                ? 'bg-gray-300 text-gray-500 cursor-not-allowed dark:bg-gray-600 dark:text-gray-400'
-                : 'bg-white text-[#005F73] border border-[#005F73] hover:bg-gray-100 dark:bg-gray-700 dark:text-[#94D2BD] dark:border-[#94D2BD] dark:hover:bg-gray-600'
-              }`}
+            disabled={currentQuestionIndex === 0}
+            className="px-6 py-3 rounded-lg font-semibold transition-all duration-200 ease-in-out bg-gray-700 text-gray-300 border border-gray-600 hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Back
           </button>
           <button
             onClick={handleNext}
-            disabled={saveBrainProfileMutation.isPending}
-            className={`px-6 py-3 rounded-lg font-semibold transition-all duration-200 ease-in-out
-              ${saveBrainProfileMutation.isPending
-                ? 'bg-[#005F73] opacity-70 cursor-not-allowed'
-                : 'bg-[#0A9396] text-white hover:bg-[#005F73]'
-              }`}
+            className="px-6 py-3 rounded-lg font-semibold transition-all duration-200 ease-in-out bg-primary text-gray-900 hover:opacity-90"
           >
-            {saveBrainProfileMutation.isPending
-              ? 'Saving...'
-              : currentQuestionIndex === quizQuestions.length - 1
-                ? 'Complete Profile'
-                : 'Next'
+            {currentQuestionIndex === quizQuestions.length - 1
+              ? 'Finish & Create Profile'
+              : 'Next'
             }
           </button>
         </div>

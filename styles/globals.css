@@ -1,29 +1,51 @@
-@import "tailwindcss";
-/* styles/globals.css */
+/*
+  Dual-Mode Global Styles
+  - Font import for 'Inter'.
+  - CSS variables for light and dark themes.
+  - Base styles for the application.
+*/
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Light Mode Palette */
+  --background-start: #fdfcfb;
+  --background-end: #e2d1c3;
+  --text-primary: #333333;
+  --text-secondary: #666666;
+  --header-start: #4facfe;
+  --header-end: #00f2fe;
+  --header-text: #ffffff;
+  --card-bg: rgba(255, 255, 255, 0.7);
+  --card-hover-bg: rgba(255, 255, 255, 0.9);
+  --card-title: #007cf0;
+  --cta-bg: #ffffff;
+  --cta-text: #007cf0;
+  --cta-hover-bg: #e0f7ff;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+.dark {
+  /* Dark Mode Palette */
+  --background-start: #1f2937;
+  --background-end: #111827;
+  --text-primary: #f3f4f6;
+  --text-secondary: #9ca3af;
+  --header-start: #0ea5e9;
+  --header-end: #3b82f6;
+  --header-text: #ffffff;
+  --card-bg: rgba(255, 255, 255, 0.05);
+  --card-hover-bg: rgba(255, 255, 255, 0.1);
+  --card-title: #3b82f6;
+  --card-border: rgba(255, 255, 255, 0.1);
+  --cta-bg: #f3f4f6;
+  --cta-text: #0ea5e9;
+  --cta-hover-bg: #e0f2fe;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Inter', sans-serif;
+  line-height: 1.6;
 }
